@@ -1,8 +1,6 @@
 import os
-
-from selene import have, command, be
-from selene.support.shared import browser
-
+from selene import browser, command, have
+from data.users import User
 
 class RegistrationPage:
     def __init__(self):
@@ -11,9 +9,25 @@ class RegistrationPage:
     def open(self):
         browser.open('/automation-practice-form')
         browser.all('[id^=google_ads][id$=container__]').with_(timeout=10).wait_until(
-           have.size_greater_than_or_equal(3)
+            have.size_greater_than_or_equal(3)
         )
         browser.all('[id^=google_ads][id$=container__]').perform(command.js.remove)
+        return self
+
+    def register(self, student: User):
+        self.fill_first_name(student.first_name)
+        self.fill_last_name(student.last_name)
+        self.fill_email(student.email)
+        self.select_gender(student.gender)
+        self.fill_mobile_number(student.mobile_number)
+        self.select_date_of_birth(student.date_of_birth)
+        self.fill_subjects(student.subjects)
+        self.fill_hobbies(student.hobbies)
+        self.upload_picture(student.picture)
+        self.fill_address(student.address)
+        self.select_state(student.state)
+        self.select_city(student.city)
+        self.submit()
         return self
 
     def fill_first_name(self, value):
@@ -37,7 +51,7 @@ class RegistrationPage:
         browser.element(gender_options[value]).click()
         return self
 
-    def mobile_number(self, value):
+    def fill_mobile_number(self, value):
         browser.element("#userNumber").type(value)
         return self
 
@@ -54,19 +68,18 @@ class RegistrationPage:
         browser.element("#subjectsInput").type(value).press_enter()
         return self
 
-    def fill_hobbies(self, hobby_name: str):
-        hobby_map = {'Sports': '1', 'Reading': '2', 'Music': '3'}
-        if hobby_name not in hobby_map:
-            raise ValueError(f"Unknown hobby: {hobby_name}. Use one of: {list(hobby_map.keys())}")
-
-        selector = f'label[for="hobbies-checkbox-{hobby_map[hobby_name]}"]'
-        element = browser.element(selector)
-        element.perform(command.js.scroll_into_view)
-        element.perform(command.js.click)
+    def fill_hobbies(self, value):
+        hobbies_options = {
+            'Sports': '[for="hobbies-checkbox-1"]',
+            'Reading': '[for="hobbies-checkbox-2"]',
+            'Music': '[for="hobbies-checkbox-3"]'
+        }
+        browser.element(hobbies_options[value]).click()
         return self
 
-    def upload_picture(self, file_path):
-        browser.element('#uploadPicture').send_keys(os.path.abspath(str(file_path)))
+    def upload_picture(self, image_name):
+        browser.element("#uploadPicture").set_value(
+            os.path.abspath(f"resources/{image_name}"))
         return self
 
     def fill_address(self, value):
@@ -74,7 +87,7 @@ class RegistrationPage:
         return self
 
     def select_state(self, value):
-        browser.element('#state').click()
+        browser.element('#state').perform(command.js.scroll_into_view).click()
         browser.all('[id^=react-select][id*=option]').element_by(
             have.exact_text(value)
         ).click()
@@ -87,23 +100,24 @@ class RegistrationPage:
         ).click()
         return self
 
-    def click_submit(self):
-        browser.element('#submit').click()
+    def submit(self):
+        browser.element("#submit").click()
         return self
 
-    def should_registered_user_with(self, full_name, email, gender, mobile_number, date_of_birth, subjects, hobbies, upload_picture, address, state_and_city):
-        browser.element('.table').all('td').even.should(
+    def should_have_registered(self, student: User):
+        browser.element('#example-modal-sizes-title-lg').should(have.exact_text('Thanks for submitting the form'))
+        browser.all('table tbody td').even.should(
             have.exact_texts(
-            full_name,
-            email,
-            gender,
-            mobile_number,
-            date_of_birth,
-            subjects,
-            hobbies,
-            upload_picture,
-            address,
-            state_and_city
+                student.full_name ,
+                student.email,
+                student.gender,
+                student.mobile_number,
+                student.date_of_birth,
+                student.subjects,
+                student.hobbies,
+                student.picture,
+                student.address,
+                student.state_and_city
             )
         )
         return self
