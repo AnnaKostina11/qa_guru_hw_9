@@ -66,7 +66,8 @@ class RegistrationPage:
         return self
 
     def upload_picture(self, file_path):
-        browser.element('#uploadPicture').send_keys(os.path.abspath(str(file_path)))
+        browser.element("#uploadPicture").set_value(
+            os.path.abspath(f"tests/resources/{file_path}"))
         return self
 
     def fill_address(self, value):

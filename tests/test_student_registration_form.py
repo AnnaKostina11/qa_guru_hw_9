@@ -16,7 +16,7 @@ def test_student_registration_form():
     registration_page.select_date_of_birth('18 June 2025')
     registration_page.fill_subjects("Computer Science")
     registration_page.fill_hobbies('Reading')
-    registration_page.upload_picture('tests/resources/duck.jpg')
+    registration_page.upload_picture('duck.jpg')
     registration_page.fill_address('Moscow')
     registration_page.select_state('Uttar Pradesh')
     registration_page.select_city('Agra')
